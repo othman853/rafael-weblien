@@ -28,10 +28,26 @@ const replies = [
   { message: 'Chore', response: replier('https://rafa-expressionless-barometer.herokuapp.com/images/rafa.jpeg') },
   { message: 'Desenha um arcoiro', response: replier('https://rainbowgram.files.wordpress.com/2015/04/f4db2-11189693_1652901948273613_921037734_n.jpg?w=350&h=200&crop=1') },
   { message: 'Desenha', response: replier('http://lorempixel.com/400/200/') },
+  { message: 'cria', response: (callback) => {
+
+      jiraClient.createIssue('askjdakdkasjd')
+      .then(function(result){
+        console.log(result);
+        return callback(`criei: ${result.key}`);
+      })
+      .catch(function(error) {
+        console.log(error);
+        return callback('Tive uns probleminhas aqui... Fala com o Rafa de verdade.');
+      })
+
+    }
+  },
   { message: 'ls', response: (callback) =>
     {
       jiraClient.findAllIssues()
        .then(function(result) {
+         console.log(result);
+         console.log(result.issues[0].fields);
          const issuesKeys = result.issues.map(i => '- ' + i.key + ': ' + i.fields.summary).join('\n');
          return callback(issuesKeys);
        })
