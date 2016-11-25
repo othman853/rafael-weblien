@@ -1,7 +1,16 @@
-const url = require('url');
 const request = require('request');
-const JiraApi = require('jira-client');
+const JiraApi = require('./jira');
+
 const replier = msg => callback => callback(msg);
+
+const jiraClient = new JiraApi({
+  protocol: 'https',
+  host: process.env.WEBLIE_HOST,
+  username: process.env.WEBLIE_USER,
+  password: process.env.WEBLIE_PASSWORD,
+  apiVersion: 'latest',
+  strictSSL: true
+});
 
 const replies = [
   { message: 'Rafa Lindo', response: replier('Sou apenas um BA.') },
@@ -19,39 +28,17 @@ const replies = [
   { message: 'Chore', response: replier('https://rafa-expressionless-barometer.herokuapp.com/images/rafa.jpeg') },
   { message: 'Desenha um arcoiro', response: replier('https://rainbowgram.files.wordpress.com/2015/04/f4db2-11189693_1652901948273613_921037734_n.jpg?w=350&h=200&crop=1') },
   { message: 'Desenha', response: replier('http://lorempixel.com/400/200/') },
-  { message: 'Busca', response: (callback) => {
-
-    JiraApi.prototype.findAllIssues = function () {
-
-      return this.doRequest(
-        this.makeRequestHeader(
-          this.makeUri({
-            pathname: `/search`,
-            query: { jql: 'project=RLT' }
-          })
-        )
-      );
-
-    }
-
-    new JiraApi({
-
-      protocol: 'https',
-      host: process.env.WEBLIE_HOST,
-      username: process.env.WEBLIE_USER,
-      password: process.env.WEBLIE_PASSWORD,
-      apiVersion: 'latest',
-      strictSSL: true
-
-    }).findAllIssues()
-     .then(function(result) {
-       const issuesKeys = result.issues.map(i => '- ' + i.key + ': ' + i.fields.summary).join('\n');
-       return callback(issuesKeys);
-     })
-     .catch(function(error) {
-       console.log(error);
-       return callback('Tive uns probleminhas aqui... Fala com o Rafa de verdade.');
-     });
+  { message: 'ls', response: (callback) =>
+    {
+      jiraClient.findAllIssues()
+       .then(function(result) {
+         const issuesKeys = result.issues.map(i => '- ' + i.key + ': ' + i.fields.summary).join('\n');
+         return callback(issuesKeys);
+       })
+       .catch(function(error) {
+         console.log(error);
+         return callback('Tive uns probleminhas aqui... Fala com o Rafa de verdade.');
+       });
     }
   }
 ];
