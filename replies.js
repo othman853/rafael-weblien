@@ -1,26 +1,67 @@
+const url = require('url');
+const request = require('request');
+const JiraApi = require('jira-client');
+const replier = msg => callback => callback(msg);
+
 const replies = [
-  { message: 'Rafa Lindo', response: 'Sou apenas um BA.' },
-  { message: 'Oi Rafa', response: 'Oi, tudo bem?' },
-  { message: 'Rafa', response: 'Oi, tudo bem?' },
-  { message: 'Cria uma história', response: 'Claro!' },
-  { message: 'Como vai?', response: 'Tudo certo. E com você?' },
-  { message: 'Porque almoça sozinho?', response: ':neutral_face:' },
-  { message: 'Tá feliz?', response: ':neutral_face:' },
-  { message: 'Tá triste?', response: ':neutral_face:' },
-  { message: 'Você é o melhor BA de todos', response: ':neutral_face:' },
-  { message: 'Você é o pior BA de todos', response: ':neutral_face:' },
-  { message: 'Sorria', response: 'https://rafa-expressionless-barometer.herokuapp.com/images/rafa.jpeg' },
-  { message: 'Chore', response: 'https://rafa-expressionless-barometer.herokuapp.com/images/rafa.jpeg' },
-  { message: 'Desenha um arcoiro', response: 'https://rainbowgram.files.wordpress.com/2015/04/f4db2-11189693_1652901948273613_921037734_n.jpg?w=350&h=200&crop=1' }
+  { message: 'Rafa Lindo', response: replier('Sou apenas um BA.') },
+  { message: 'E o Rafa de verdade?', response: replier('Ele é o melhor BA da TW! Tenho orgulho em imitar ele!') },
+  { message: 'Oi Rafa', response: replier('Oi, tudo bem?') },
+  { message: 'Rafa', response: replier('Oi, tudo bem?') },
+  { message: 'Cria uma história', response: replier('Claro!') },
+  { message: 'Como vai?', response: replier('Tudo certo. E com você?') },
+  { message: 'Por que almoça sozinho?', response: replier(':neutral_face:') },
+  { message: 'Tá feliz?', response: replier(':neutral_face:') },
+  { message: 'Tá triste?', response: replier(':neutral_face:') },
+  { message: 'Você é o melhor BA de todos', response: replier(':neutral_face:') },
+  { message: 'Você é o pior BA de todos', response: replier(':neutral_face:') },
+  { message: 'Sorria', response: replier('https://rafa-expressionless-barometer.herokuapp.com/images/rafa.jpeg') },
+  { message: 'Chore', response: replier('https://rafa-expressionless-barometer.herokuapp.com/images/rafa.jpeg') },
+  { message: 'Desenha um arcoiro', response: replier('https://rainbowgram.files.wordpress.com/2015/04/f4db2-11189693_1652901948273613_921037734_n.jpg?w=350&h=200&crop=1') },
+  { message: 'Desenha', response: replier('http://lorempixel.com/400/200/') },
+  { message: 'Busca', response: (callback) => {
+
+    JiraApi.prototype.findAllIssues = function () {
+
+      return this.doRequest(
+        this.makeRequestHeader(
+          this.makeUri({
+            pathname: `/search`,
+            query: { jql: 'project=RLT' }
+          })
+        )
+      );
+
+    }
+
+    new JiraApi({
+
+      protocol: 'https',
+      host: process.env.WEBLIE_HOST,
+      username: process.env.WEBLIE_USER,
+      password: process.env.WEBLIE_PASSWORD,
+      apiVersion: 'latest',
+      strictSSL: true
+
+    }).findAllIssues()
+     .then(function(result) {
+       const issuesKeys = result.issues.map(i => '- ' + i.key + ': ' + i.fields.summary).join('\n');
+       return callback(issuesKeys);
+     })
+     .catch(function(error) {
+       console.log(error);
+       return callback('Tive uns probleminhas aqui... Fala com o Rafa de verdade.');
+     });
+    }
+  }
 ];
 
-const options = replies.map( r => '- ' + r.message).join('\n');
+const options = callback => callback(`Não entendi :( \n\n Só sei responder o seguinte: \n\n ${replies.map( r => '- ' + r.message).join('\n')}`);
 
 module.exports = {
 
-
-  answer: (message) => {
+  answer: (message, cb) => {
     const reply = replies.find( r => r.message.toLowerCase() === message.toLowerCase());
-    return reply ? reply.response : `Não entendi :( \n\n Só sei responder o seguinte: \n\n ${options}`;
+    reply ? reply.response(cb) : options(cb);
   }
 }

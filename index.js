@@ -11,7 +11,7 @@ bot.on('start', () => console.log('up'));
 bot.on('message', (data) => {
 
   if (data.type === 'message' && data.username !== 'Rafael Weblien') {
-    bot.postMessage(data.channel, replies.answer(data.text));
+    replies.answer(data.text, reply => bot.postMessage(data.channel, reply));
   }
 
 });
