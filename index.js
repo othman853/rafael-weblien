@@ -7,12 +7,7 @@ const bot = new Slackbot({
   name: 'Rafael Weblien'
 });
 
-bot.on('start', () => {
-
-  console.log('up');
-
-});
-
+bot.on('start', () => console.log('up'));
 bot.on('message', (data) => {
 
   if (data.type === 'message' && data.username !== 'Rafael Weblien') {
